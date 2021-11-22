@@ -1,0 +1,4 @@
+instruments:
+  legacysurvey:
+    data_server_url: http://localhost:9191
+    dummy_cache: dangerously-not-set-to-anything-useful

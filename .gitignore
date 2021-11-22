@@ -1,0 +1,6 @@
+**_pycache__
+.venv
+.vscode
+*.egg-info
+download*
+scratch_sid*

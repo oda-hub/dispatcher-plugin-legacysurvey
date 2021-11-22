@@ -1,0 +1,2 @@
+from .instrument import legacysurvey_factory
+instr_factory_list=[legacysurvey_factory]
