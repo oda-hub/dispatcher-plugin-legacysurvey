@@ -55,7 +55,7 @@ class LegacySurveyDispatcher:
         print('dummy OK')
         query_out = QueryOutput()
         query_out.set_done('data available')
-        return query_out, [1]
+        return query_out, []
     
 
     def run_query(self,
