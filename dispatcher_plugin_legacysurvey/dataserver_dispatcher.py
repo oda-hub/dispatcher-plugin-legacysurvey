@@ -76,9 +76,20 @@ class LegacySurveyDispatcher:
         if param_dict is None:
             param_dict=self.param_dict   
 
-        #TODO: handle fail
         url = "%s/%s" % (self.data_server_url, task)
         res = requests.get("%s" % (url), params = param_dict)
-        query_out.set_done(message=message, debug_message=str(debug_message),job_status='done')
-
+        if res.status_code == 200:
+            if res.json()['exceptions']:
+                except_message = res.json()['exceptions'][0]
+                query_out.set_failed('Processing failed', message=except_message)
+                raise RuntimeError(f'Processing failed. {except_message}')
+            query_out.set_done(message=message, debug_message=str(debug_message),job_status='done')
+        else:
+            query_out.set_failed('Error in the backend',
+                                 message='connection status code: ' + str(res.status_code),
+                                 extra_message=res.json()['exceptions'][0])
+            if 'NoResultsWarning' in res.json()['exceptions'][0]:
+                raise RuntimeError('Error in the backend. Probably, you query the point outside of survey\'s coverage.')
+            else:
+                raise RuntimeError('Error in the backend')
         return res, query_out
