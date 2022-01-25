@@ -1,4 +1,3 @@
-from re import S
 import numpy as np
 from cdci_data_analysis.analysis.queries import BaseQuery, ProductQuery
 from cdci_data_analysis.analysis.parameters import Integer, ParameterTuple, Name, Angle
@@ -44,7 +43,8 @@ class LSSpectrumQuery(ProductQuery):
     def get_data_server_query(self, instrument, config, **kwargs):
         param_dict = dict(ra_s = instrument.get_par_by_name('RA').value,
                           dec_s = instrument.get_par_by_name('DEC').value,
-                          radius_photometry = instrument.get_par_by_name('radius_photometry').value,
+                          radius_photometry = instrument.get_par_by_name('radius_photometry').value * 3600,
+                          # FIXME: dirty hotfix here!
                           dr = instrument.get_par_by_name('data_release').value)
         return instrument.data_server_query_class(instrument=instrument,
                                                   config=config,
@@ -58,10 +58,8 @@ class LSSpectrumQuery(ProductQuery):
         _o_dict = res.json()
         spec_im = _o_dict['output']['spec_im']
         spec = ascii.read(_o_dict['output']['spec'])
-        nedspec = ascii.read(_o_dict['output']['nedspec'])
         
-        spectra = LSSpectraProduct({'spectrum_legacysurvey': spec,
-                                    'spectrum_ned': nedspec},
+        spectra = LSSpectraProduct({'spectrum_legacysurvey': spec},
                                    image = spec_im, 
                                    out_dir = out_dir)
         prod_list.append(spectra)       
@@ -139,8 +137,8 @@ class LSCatalog(BasicCatalog):
 class LSImageQuery(ProductQuery):
     def __init__(self, name):
                 image_band = Name(value='g', name='image_band')
-                image_size = Angle(value=0.03, units='degree', name='image_size')
-                pixel_size = Angle(value=1, units='arcsec', name='pixel_size')
+                image_size = Angle(value=3., units='arcmin', name='image_size')
+                pixel_size = Angle(value=1., units='arcsec', name='pixel_size')
                 parameters_list = [image_band, image_size, pixel_size]
                 super().__init__(name, parameters_list)
 
@@ -149,8 +147,9 @@ class LSImageQuery(ProductQuery):
                           dec_s = instrument.get_par_by_name('DEC').value,
                           dr = instrument.get_par_by_name('data_release').value,
                           image_band = instrument.get_par_by_name('image_band').value,
-                          image_size = instrument.get_par_by_name('image_size').value,
-                          pixsize = instrument.get_par_by_name('pixel_size').value)
+                          image_size = instrument.get_par_by_name('image_size').value * 60,
+                          pixsize = instrument.get_par_by_name('pixel_size').value * 3600)
+                          # FIXME: dirty hotfix here!
 
         return instrument.data_server_query_class(instrument=instrument,
                                                   config=config,
