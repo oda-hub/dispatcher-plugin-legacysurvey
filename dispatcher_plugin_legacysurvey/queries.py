@@ -36,15 +36,14 @@ class LSInstrumentQuery(BaseQuery):
 
 class LSSpectrumQuery(ProductQuery):
     def __init__(self, name):
-                radius_photometry = Angle(value=3, units='arcsec', name='radius_photometry')
+                radius_photometry = Angle(value=3, units='arcsec', default_units='arcsec', name='radius_photometry')
                 parameters_list = [radius_photometry]
                 super().__init__(name, parameters_list)
 
     def get_data_server_query(self, instrument, config, **kwargs):
         param_dict = dict(ra_s = instrument.get_par_by_name('RA').value,
                           dec_s = instrument.get_par_by_name('DEC').value,
-                          radius_photometry = instrument.get_par_by_name('radius_photometry').value * 3600,
-                          # FIXME: dirty hotfix here!
+                          radius_photometry = instrument.get_par_by_name('radius_photometry').value,
                           dr = instrument.get_par_by_name('data_release').value)
         return instrument.data_server_query_class(instrument=instrument,
                                                   config=config,
@@ -137,8 +136,8 @@ class LSCatalog(BasicCatalog):
 class LSImageQuery(ProductQuery):
     def __init__(self, name):
                 image_band = Name(value='g', name='image_band')
-                image_size = Angle(value=3., units='arcmin', name='image_size')
-                pixel_size = Angle(value=1., units='arcsec', name='pixel_size')
+                image_size = Angle(value=3., units='arcmin', default_units='arcmin', name='image_size')
+                pixel_size = Angle(value=1., units='arcsec', default_units='arcsec', name='pixel_size')
                 parameters_list = [image_band, image_size, pixel_size]
                 super().__init__(name, parameters_list)
 
@@ -147,9 +146,8 @@ class LSImageQuery(ProductQuery):
                           dec_s = instrument.get_par_by_name('DEC').value,
                           dr = instrument.get_par_by_name('data_release').value,
                           image_band = instrument.get_par_by_name('image_band').value,
-                          image_size = instrument.get_par_by_name('image_size').value * 60,
-                          pixsize = instrument.get_par_by_name('pixel_size').value * 3600)
-                          # FIXME: dirty hotfix here!
+                          image_size = instrument.get_par_by_name('image_size').value,
+                          pixsize = instrument.get_par_by_name('pixel_size').value)
 
         return instrument.data_server_query_class(instrument=instrument,
                                                   config=config,
