@@ -1,11 +1,8 @@
-from oda_api.data_products import ODAAstropyTable
-from cdci_data_analysis.analysis.products import BaseQueryProduct
+from oda_api.data_products import ODAAstropyTable, NumpyDataUnit, NumpyDataProduct
+from cdci_data_analysis.analysis.products import BaseQueryProduct, ImageProduct, CatalogProduct
 from cdci_data_analysis.analysis.plot_tools import ScatterPlot
-
-from bokeh.plotting import figure
-from bokeh.models import ColorBar, LinearColorMapper, HoverTool, CustomJS, Slider 
-from bokeh.embed import components
-from bokeh.layouts import row, widgetbox, column
+from astropy.io import ascii
+import numpy as np
 
 class LSPhotometryProduct(BaseQueryProduct):
     def __init__(self, spec_table, name, file_name, out_dir = None, prod_prefix = None, meta_data = {}):
@@ -43,3 +40,62 @@ class LSPhotometryProduct(BaseQueryProduct):
                              x_axis_type = 'log')
              
         return  sp.get_html_draw()
+    
+class LSImageProduct(ImageProduct):
+    def __init__(self, header, data, name='legacysurvey_image', file_name='legacysurvey_image.fits', out_dir = None, meta_data={}):
+        data = np.array(data)
+        data_unit = NumpyDataUnit(data, header, hdu_type='image', name='image')
+        data_prod = NumpyDataProduct(data_unit, name=name)
+        super().__init__(name, data_prod, file_name, meta_data, file_dir = out_dir)
+
+#TODO: it would be better to refactor BasicCatalog to be more universal and use it
+class LSCatalog: 
+    def __init__(self, atable):
+        self._table = atable
+        
+    @property
+    def table(self):
+        return self._table
+
+    @property
+    def name(self):
+        return np.array(['']*len(self.table), dtype='object')
+    
+    @property
+    def ra(self):
+        return self.table['ra'].value
+    
+    @property
+    def dec(self):
+        return self.table['dec'].value
+    
+    @classmethod
+    def from_encoded_table(cls, enc_table):
+        atable = ascii.read(enc_table)
+        return cls(atable)
+    
+    def add_column(self, name, values, index=None):
+        self.table.add_column(values, name=name, index=index)
+    
+    def write(self, name, format='fits', overwrite=True):
+        self._table.write(name, format=format, overwrite=overwrite)        
+    
+    def get_dictionary(self, api=False):
+        #TODO: select only needed columns, at least for the frontend
+        
+        self.add_column('index', np.arange(len(self.table)), 0)
+        
+        column_lists=[self.table[name].tolist() for name in self.table.colnames]
+        
+        for ID,_col in enumerate(column_lists):
+            column_lists[ID] = [x if str(x)!='nan' and str(x)!='inf' else None for x in _col]
+            
+        catalog_dict = dict(cat_column_list=column_lists,
+                cat_column_names=self.table.colnames,
+                cat_column_descr=self.table.dtype.descr,
+                cat_meta = self.table.meta
+                )
+        return catalog_dict                    
+    
+class LSCatalogProduct(CatalogProduct):
+    pass

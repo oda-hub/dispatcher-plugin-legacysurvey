@@ -1,14 +1,8 @@
-import numpy as np
 from cdci_data_analysis.analysis.queries import BaseQuery, ProductQuery
-from cdci_data_analysis.analysis.parameters import Integer, ParameterTuple, Name, Angle
-from cdci_data_analysis.analysis.products import QueryOutput, BaseQueryProduct
-from oda_api.data_products import ODAAstropyTable, NumpyDataProduct, NumpyDataUnit 
+from cdci_data_analysis.analysis.parameters import Integer, Name, Angle
+from cdci_data_analysis.analysis.products import QueryOutput
 from astropy.io import ascii
-from astropy.io import fits
-import os
-from cdci_data_analysis.analysis.catalog import BasicCatalog
-from .products import LSPhotometryProduct
-
+from .products import LSCatalog, LSPhotometryProduct, LSImageProduct, LSCatalogProduct
 
 class LSInstrumentQuery(BaseQuery):
     def __init__(self, 
@@ -72,28 +66,7 @@ class LSPhotometryQuery(ProductQuery):
 
         return query_out
     
-class LSImageProduct:
-    def __init__(self, header_str, data, image = None, out_dir = None):
-        self.header = fits.Header.fromstring(header_str)
-        self.data = np.array(data)
-        self.image = image
-        self.out_dir = out_dir
-        
-    def write(self):
-        hdu = fits.PrimaryHDU(self.data)
-        hdu.header = self.header
-        hdul = fits.HDUList([hdu])
-        hdul.writeto(self.out_dir + '/legacysurvey_image.fits', overwrite=True)
-                
-    def get_plot(self):
-        script = ''
-        div = f'<img width=800 src="data:image/jpeg;base64,{self.image}">'
-        return script, div            
-
-class LSCatalog(BasicCatalog):
-    pass
-
-        
+       
 class LSImageQuery(ProductQuery):
     def __init__(self, name):
                 image_band = Name(value='g', name='image_band')
@@ -120,38 +93,46 @@ class LSImageQuery(ProductQuery):
         if out_dir is None:
             out_dir = './'
         _o_dict = res.json()      
-        image_str = _o_dict['output']['image_log']
         imfits_head = _o_dict['output']['imfits_head']
         imfits_data = _o_dict['output']['imfits_data']
-        catalog = _o_dict['output']['catalog']
+        catalog_str = _o_dict['output']['catalog']
                 
-        image = LSImageProduct(imfits_head, imfits_data, image_str, out_dir)
+        image = LSImageProduct(imfits_head, 
+                               imfits_data, 
+                               out_dir = out_dir, 
+                               name='legacysurvey_image', 
+                               file_name='legacysurvey_image.fits')
         prod_list.append(image)
-        #TODO add catalog
+        
+        catalog = LSCatalog.from_encoded_table(catalog_str)
+        cat_prod = LSCatalogProduct('legacysurvey_catalog', 
+                                    catalog, 
+                                    file_dir = out_dir, 
+                                    file_name='catalog')
+        prod_list.append(cat_prod)
+        
         return prod_list
 
     def process_product_method(self, instrument, prod_list, api=False):
-        if api is True:
-            raise NotImplementedError
-        else:
-            prod  = prod_list.prod_list[0]
-            script, div = prod.get_plot()
-            html_dict = {}
-            html_dict['script'] = script
-            html_dict['div'] = div
-            plot_dict = {}
-            plot_dict['image'] = html_dict
-            plot_dict['header_text'] = ''
-            plot_dict['table_text'] = ''
-            plot_dict['footer_text'] = ''
+        query_out = QueryOutput()
+        image_prod  = prod_list.get_prod_by_name('legacysurvey_image')
+        catalog_prod = prod_list.get_prod_by_name('legacysurvey_catalog')
 
-            prod.write()
-            query_out = QueryOutput()
-            query_out.prod_dictionary['name'] = 'spectrogram'
-            query_out.prod_dictionary['file_name'] = 'legacysurvey_image.fits'
+        if api is True:
+            query_out.prod_dictionary['numpy_data_product_list'] = [ image_prod.data ]
+            query_out.prod_dictionary['catalog'] = catalog_prod.catalog.get_dictionary(api=True)
+        else:
+            plot_dict = image_prod.get_html_draw(catalog_prod.catalog)
+            image_prod.write()
+            catalog_prod.write(format='fits')
+
+            query_out.prod_dictionary['name'] = image_prod.name
+            query_out.prod_dictionary['file_name'] = [str(image_prod.file_path.name), 
+                                                      str(catalog_prod.file_path.name)+'.fits']
             query_out.prod_dictionary['image'] = plot_dict
-            query_out.prod_dictionary['download_file_name'] = 'legacysurvey_image.fits'
+            query_out.prod_dictionary['download_file_name'] = 'legacysurvey_image.tar.gz'
             query_out.prod_dictionary['prod_process_message'] = ''
+            query_out.prod_dictionary['catalog'] = catalog_prod.catalog.get_dictionary(api=False)
 
         return query_out
         
