@@ -36,6 +36,10 @@ class LSPhotometryProduct(BaseQueryProduct):
                              x_axis_type = 'log')
             sp.add_errorbar(e_range, points, yerr=errors)
         else:
-            pass
-            
+            sp = ScatterPlot(w = w, h = h, 
+                             x_label = 'eV',
+                             y_label = '',
+                             y_axis_type = 'log',
+                             x_axis_type = 'log')
+             
         return  sp.get_html_draw()
