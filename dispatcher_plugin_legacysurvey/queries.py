@@ -50,10 +50,11 @@ class LSPhotometryQuery(ProductQuery):
         return prod_list
 
     def process_product_method(self, instrument, prod_list, api=False):
+        query_out = QueryOutput()
+        prod  = prod_list.prod_list[0]
         if api is True:
-            raise NotImplementedError
+            query_out.prod_dictionary['astropy_table_product_ascii_list'] = [prod.data.encode(use_binary=False)]
         else:
-            prod  = prod_list.prod_list[0]
             html_dict = prod.get_plot()
             prod.write()
             
@@ -63,7 +64,6 @@ class LSPhotometryQuery(ProductQuery):
             plot_dict['table_text'] = ''
             plot_dict['footer_text'] = ''
             
-            query_out = QueryOutput()
             query_out.prod_dictionary['name'] = 'photometry'
             query_out.prod_dictionary['file_name'] = str(prod.file_path.name)
             query_out.prod_dictionary['image'] = plot_dict
