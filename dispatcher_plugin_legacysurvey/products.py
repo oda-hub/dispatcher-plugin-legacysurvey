@@ -52,6 +52,16 @@ class LSImageProduct(ImageProduct):
 class LSCatalog: 
     def __init__(self, atable):
         self._table = atable
+        self.columns_to_show = ['ra', 'dec', #'mjd_min', 'mjd_max', 
+                                'flux_g', #'flux_ivar_g',
+                                'flux_r', #'flux_ivar_r',
+                                'flux_z', #'flux_ivar_z',
+                                'flux_w1', #'flux_ivar_w1',
+                                'flux_w2', #'flux_ivar_w2',
+                                'flux_w3', #'flux_ivar_w3',
+                                'flux_w4', #'flux_ivar_w4',
+                                ]
+        self._table_reduced = self._table[self.columns_to_show]
         
     @property
     def table(self):
@@ -81,19 +91,22 @@ class LSCatalog:
         self._table.write(name, format=format, overwrite=overwrite)        
     
     def get_dictionary(self, api=False):
-        #TODO: select only needed columns, at least for the frontend
+        if api:
+            table = self._table
+        else:
+            table = self._table_reduced
         
-        self.add_column('index', np.arange(len(self.table)), 0)
+        table.add_column(np.arange(len(table)), name='index', index=0)
         
-        column_lists=[self.table[name].tolist() for name in self.table.colnames]
+        column_lists=[table[name].tolist() for name in table.colnames]
         
         for ID,_col in enumerate(column_lists):
             column_lists[ID] = [x if str(x)!='nan' and str(x)!='inf' else None for x in _col]
             
         catalog_dict = dict(cat_column_list=column_lists,
-                cat_column_names=self.table.colnames,
-                cat_column_descr=self.table.dtype.descr,
-                cat_meta = self.table.meta
+                cat_column_names=table.colnames,
+                cat_column_descr=table.dtype.descr,
+                cat_meta = table.meta
                 )
         return catalog_dict                    
     

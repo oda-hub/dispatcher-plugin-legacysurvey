@@ -76,8 +76,8 @@ class LegacySurveyDispatcher:
         if param_dict is None:
             param_dict=self.param_dict   
 
-        url = "%s/%s" % (self.data_server_url, task)
-        res = requests.get("%s" % (url), params = param_dict)
+        url = '/'.join([self.data_server_url.strip('/'), task.strip('/')])
+        res = requests.get(url, params = param_dict)
         if res.status_code == 200:
             if res.json()['exceptions']:
                 except_message = res.json()['exceptions'][0]
@@ -89,7 +89,7 @@ class LegacySurveyDispatcher:
                                  message='connection status code: ' + str(res.status_code),
                                  extra_message=res.json()['exceptions'][0])
             if 'NoResultsWarning' in res.json()['exceptions'][0]:
-                raise RuntimeError('Error in the backend. Probably, you query the point outside of survey\'s coverage.')
+                raise RuntimeError('Error in the backend. Probably, point is outside of survey\'s coverage.')
             else:
                 raise RuntimeError('Error in the backend')
         return res, query_out

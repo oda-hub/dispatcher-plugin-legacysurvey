@@ -122,7 +122,7 @@ class LSImageQuery(ProductQuery):
             query_out.prod_dictionary['numpy_data_product_list'] = [ image_prod.data ]
             query_out.prod_dictionary['catalog'] = catalog_prod.catalog.get_dictionary(api=True)
         else:
-            plot_dict = image_prod.get_html_draw(catalog_prod.catalog)
+            plot_dict = image_prod.get_html_draw(catalog_prod.catalog, sources_circle_size=7)
             image_prod.write()
             catalog_prod.write(format='fits')
 
