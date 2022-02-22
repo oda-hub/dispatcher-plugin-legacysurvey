@@ -100,7 +100,7 @@ class LSImageQuery(ProductQuery):
         image = LSImageProduct(imfits_head, 
                                imfits_data, 
                                out_dir = out_dir, 
-                               name='legacysurvey_image', 
+                               name='mosaic_image', 
                                file_name='legacysurvey_image.fits')
         prod_list.append(image)
         
@@ -115,7 +115,7 @@ class LSImageQuery(ProductQuery):
 
     def process_product_method(self, instrument, prod_list, api=False):
         query_out = QueryOutput()
-        image_prod  = prod_list.get_prod_by_name('legacysurvey_image')
+        image_prod  = prod_list.get_prod_by_name('mosaic_image')
         catalog_prod = prod_list.get_prod_by_name('legacysurvey_catalog')
 
         if api is True:
