@@ -42,10 +42,16 @@ class LSPhotometryProduct(BaseQueryProduct):
         return  sp.get_html_draw()
     
 class LSImageProduct(ImageProduct):
-    def __init__(self, header, data, name='legacysurvey_image', file_name='legacysurvey_image.fits', out_dir = None, meta_data={}):
+    def __init__(self, 
+                 header, 
+                 data, 
+                 name='legacysurvey_image', 
+                 file_name='legacysurvey_image.fits', 
+                 out_dir = None, 
+                 meta_data={}):
         data = np.array(data)
         data_unit = NumpyDataUnit(data, header, hdu_type='image', name='image')
-        data_prod = NumpyDataProduct(data_unit, name=name)
+        data_prod = NumpyDataProduct(data_unit, name=name, meta_data = {'product': 'mosaic'})
         super().__init__(name, data_prod, file_name, meta_data, file_dir = out_dir)
 
 #TODO: it would be better to refactor BasicCatalog to be more universal and use it
