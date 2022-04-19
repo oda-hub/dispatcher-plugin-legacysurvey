@@ -24,6 +24,7 @@ class LSPhotometryProduct(BaseQueryProduct):
         e_range = data['E']
         points = data['nuFnu']
         errors = data['nuFnu_err']
+        sensitivity = data['nuFnu_sensitivity']
         
         if len(data) > 0:
             sp = ScatterPlot(w = w, h = h, 
@@ -32,6 +33,8 @@ class LSPhotometryProduct(BaseQueryProduct):
                              y_axis_type = 'log',
                              x_axis_type = 'log')
             sp.add_errorbar(e_range, points, yerr=errors)
+            if np.any( sensitivity > points ):
+                sp.add_line(e_range, sensitivity, legend='Sensitivity limit', color='blue')                
         else:
             sp = ScatterPlot(w = w, h = h, 
                              x_label = 'eV',
