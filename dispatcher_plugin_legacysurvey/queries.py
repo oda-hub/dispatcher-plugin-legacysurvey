@@ -1,16 +1,16 @@
-from cdci_data_analysis.analysis.queries import BaseQuery, ProductQuery
+from cdci_data_analysis.analysis.queries import BaseQuery, ProductQuery, InstrumentQuery
 from cdci_data_analysis.analysis.parameters import Integer, Name, Angle
 from cdci_data_analysis.analysis.products import QueryOutput
 from astropy.io import ascii
 from .products import LSCatalog, LSPhotometryProduct, LSImageProduct, LSCatalogProduct
 
-class LSInstrumentQuery(BaseQuery):
+class LSInstrumentQuery(InstrumentQuery):
     def __init__(self, 
                  name):
+        super().__init__(name)
         data_release = Integer(value=9, name='data_release')
-        param_list = [data_release]
-        self.input_prod_list_name = None
-        super().__init__(name, param_list)
+        self._parameters_list = [data_release]
+        self._build_par_dictionary()
 
 class LSPhotometryQuery(ProductQuery):
     def __init__(self, name):
