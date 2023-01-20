@@ -8,13 +8,16 @@ class LSInstrumentQuery(InstrumentQuery):
     def __init__(self, 
                  name):
         super().__init__(name)
-        data_release = Integer(value=9, name='data_release')
+        data_release = Integer(value=9, name='data_release', min_value=1, max_value=9)
         self._parameters_list = [data_release]
         self._build_par_dictionary()
 
 class LSPhotometryQuery(ProductQuery):
     def __init__(self, name):
-                radius_photometry = Angle(value=3, units='arcsec', default_units='arcsec', name='radius_photometry')
+                radius_photometry = Angle(value=3, 
+                                          units='arcsec', 
+                                          default_units='arcsec', 
+                                          name='radius_photometry')
                 parameters_list = [radius_photometry]
                 super().__init__(name, parameters_list)
 
@@ -69,9 +72,17 @@ class LSPhotometryQuery(ProductQuery):
        
 class LSImageQuery(ProductQuery):
     def __init__(self, name):
-                image_band = Name(value='g', name='image_band')
-                image_size = Angle(value=3., units='arcmin', default_units='arcmin', name='image_size')
-                pixel_size = Angle(value=1., units='arcsec', default_units='arcsec', name='pixel_size')
+                image_band = Name(value='g', 
+                                  name='image_band', 
+                                  allowed_values=['g', 'r', 'z'])
+                image_size = Angle(value=3., 
+                                   units='arcmin', 
+                                   default_units='arcmin', 
+                                   name='image_size')
+                pixel_size = Angle(value=1., 
+                                   units='arcsec', 
+                                   default_units='arcsec', 
+                                   name='pixel_size')
                 parameters_list = [image_band, image_size, pixel_size]
                 super().__init__(name, parameters_list)
 
