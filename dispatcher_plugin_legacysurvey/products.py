@@ -27,20 +27,36 @@ class LSPhotometryProduct(BaseQueryProduct):
         sensitivity = data['nuFnu_sensitivity']
         
         if len(data) > 0:
+            log_e_range_min = np.log10(e_range.min().value)
+            log_e_range_max = np.log10(e_range.max().value)
+            x_margin = 0.1 * np.abs(log_e_range_min - log_e_range_max)
+            x_range = [10 ** (log_e_range_min - x_margin), 10 ** (log_e_range_max + x_margin)]
+
+            log_points_min = np.log10(points.min().value)
+            log_points_max = np.log10(points.max().value)
+            y_margin = 0.1 * np.abs(log_points_min - log_points_max)
+            y_range = [10 ** (log_points_min - y_margin), 10 ** (log_points_max + y_margin)]
+
             sp = ScatterPlot(w = w, h = h, 
                              x_label = str(e_range.unit),
                              y_label = str(points.unit),
                              y_axis_type = 'log',
-                             x_axis_type = 'log')
+                             x_axis_type = 'log',
+                             x_range=x_range,
+                             y_range=y_range)
             sp.add_errorbar(e_range, points, yerr=errors)
             if np.all( points <= 0 ):
                 sp.add_line(e_range, sensitivity, legend='Sensitivity limit', color='blue')                
         else:
+            x_range = []
+            y_range = []
             sp = ScatterPlot(w = w, h = h, 
                              x_label = 'eV',
                              y_label = '',
                              y_axis_type = 'log',
-                             x_axis_type = 'log')
+                             x_axis_type = 'log',
+                             x_range=x_range,
+                             y_range=y_range)
              
         return  sp.get_html_draw()
     
