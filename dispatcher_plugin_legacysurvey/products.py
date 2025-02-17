@@ -27,13 +27,13 @@ class LSPhotometryProduct(BaseQueryProduct):
         sensitivity = data['nuFnu_sensitivity']
         
         if len(data) > 0:
-            log_e_range_min = np.log10(e_range.min().value)
-            log_e_range_max = np.log10(e_range.max().value)
+            log_e_range_min = np.log10(e_range.min())
+            log_e_range_max = np.log10(e_range.max())
             x_margin = 0.1 * np.abs(log_e_range_min - log_e_range_max)
             x_range = [10 ** (log_e_range_min - x_margin), 10 ** (log_e_range_max + x_margin)]
 
-            log_points_min = np.log10(points.min().value)
-            log_points_max = np.log10(points.max().value)
+            log_points_min = np.log10(points.min())
+            log_points_max = np.log10(points.max())
             y_margin = 0.1 * np.abs(log_points_min - log_points_max)
             y_range = [10 ** (log_points_min - y_margin), 10 ** (log_points_max + y_margin)]
 
