@@ -32,8 +32,13 @@ class LSPhotometryProduct(BaseQueryProduct):
             x_margin = 0.1 * np.abs(log_e_range_min - log_e_range_max)
             x_range = [10 ** (log_e_range_min - x_margin), 10 ** (log_e_range_max + x_margin)]
 
-            log_points_min = np.log10(points.min())
-            log_points_max = np.log10(points.max())
+            no_zeros_points = points[points!=0]
+            if no_zeros_points.size > 0:
+                log_points_min = np.log10(no_zeros_points.min())
+                log_points_max = np.log10(no_zeros_points.max())
+            else:
+                log_points_min = -1
+                log_points_max = 1
             y_margin = 0.1 * np.abs(log_points_min - log_points_max)
             y_range = [10 ** (log_points_min - y_margin), 10 ** (log_points_max + y_margin)]
 
