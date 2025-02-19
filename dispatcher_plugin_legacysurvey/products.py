@@ -36,11 +36,10 @@ class LSPhotometryProduct(BaseQueryProduct):
             if no_zeros_points.size > 0:
                 log_points_min = np.log10(no_zeros_points.min())
                 log_points_max = np.log10(no_zeros_points.max())
+                y_margin = 0.1 * np.abs(log_points_min - log_points_max)
+                y_range = [10 ** (log_points_min - y_margin), 10 ** (log_points_max + y_margin)]
             else:
-                log_points_min = -1
-                log_points_max = 1
-            y_margin = 0.1 * np.abs(log_points_min - log_points_max)
-            y_range = [10 ** (log_points_min - y_margin), 10 ** (log_points_max + y_margin)]
+                y_range = [-1, 1]
 
             sp = ScatterPlot(w = w, h = h, 
                              x_label = str(e_range.unit),
